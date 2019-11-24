@@ -5,7 +5,7 @@ var socketIO = require('socket.io');
 var app = express();
 var server = http.Server(app);
 var io = socketIO(server);
-app.set('port', 5000);
+app.set('port', 80);
 app.use('/static', express.static(__dirname + '/static'));
 
 // Маршруты
@@ -14,8 +14,8 @@ app.get('/', function(request, response) {
 });
 
 // Запуск сервера
-server.listen(5000, function() {
-    console.log('Запускаю сервер на порте 5000');
+server.listen(80, function() {
+    console.log('Запускаю сервер на порте 80');
 });
 var players = [];
 var WordsToPlay = ["Крокодил", "Яблоко", "Груша", "Слива", "Йод", "Йог"];
