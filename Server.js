@@ -5,7 +5,7 @@ var socketIO = require('socket.io');
 var app = express();
 var server = http.Server(app);
 var io = socketIO(server);
-app.set('port', 80);
+//app.set('port', 80);
 app.use('/static', express.static(__dirname + '/static'));
 
 // Маршруты
