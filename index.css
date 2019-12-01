@@ -1,0 +1,60 @@
+html, body {
+    padding: 0;
+    margin: 0;
+}
+#StartWindow
+{
+    text-align: center;
+    background: white;
+    z-index: 99999;
+    display: block;
+    padding-top: 20%;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+}
+.mainWindow
+{
+    margin: 100px 0 0 0;
+    text-align: center;
+}
+main{
+    display: flex;
+    justify-content: space-between;
+}
+#ListOfUsers{
+    text-align: center;
+    margin-right: 5%;
+    width: 300px;
+    height: 400px;
+}
+#UsersAnswer
+{
+    text-align: center;
+    margin-right: 20%;
+    float: right;
+    border: solid black 1px;
+    width: 400px;
+    height: 400px;
+}
+#CanvasDiv
+{
+    margin-left: 5%;
+    float: left;
+}
+.Chat{
+    text-align: center;
+    float: right;
+}
+.ColorBtn
+{
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+}
+#red{background: red;}
+#blue{background: blue;}
+#yellow{background: yellow;}
+#green{background: green;}
+#black{background: black;}

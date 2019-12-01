@@ -16,39 +16,62 @@ app.get('/', function(request, response) {
 
 // Запуск сервера
 server.listen(port, function() {
-    console.log('Запускаю сервер на порте ' + port);
+    console.log('Запускаю сервер на порте 5000');
 });
-var players = [];
+var players = {};
 var WordsToPlay = ["Крокодил", "Яблоко", "Груша", "Слива", "Йод", "Йог"];
+
+var AlreadyDraw,
+DrawName,
+Word,
+WaitNewUser = false,
+UsersList = {};
+
 function randomInteger(min, max) {
     let rand = min + Math.random() * (max - min);
     return Math.round(rand);
-  }
-var AlreadyDraw;
-var DrawName
-var Word
-var countOfUsers
+}
 io.on('connection', function(socket) {
-    
+    socket.emit("IsUser", players)
     socket.on("NewUserName", function(name){
-        
-        players[socket.id] = name
+        players[socket.id] = {name:name, ability:"false"}
+        io.sockets.emit("UserNamesList", players)
         io.sockets.emit('message', "В игру зашел новый игрок: "+name+"\n");
-        io.sockets.emit("DrawChoise", players[socket.id]);
+
+
+        if(WaitNewUser === true){
+            WaitNewUser = false
+            players[socket.id].ability = "true"
+            io.sockets.emit("UserNamesList", players)
+            io.sockets.emit("UserRemove");
+            Word = randomInteger(0, WordsToPlay.length-1)
+            socket.emit('SendWord',  WordsToPlay[Word])
+            socket.emit("ShowBtn")
+            socket.broadcast.emit("DelBtn", "Del");
+            DrawName = players[socket.id].name
+            io.sockets.emit('TTT', DrawName)
+        }
     })
     
     socket.on("NewMessage", function(data){
         if(data == WordsToPlay[Word]){
+            for (let key in players) {
+                if(players[key].name == DrawName){
+                    players[key].ability = "false"
+                }
+            }
+            players[socket.id].ability = "true"
+            io.sockets.emit("UserNamesList", players)
             io.sockets.emit("UserRemove");
             Word = randomInteger(0, WordsToPlay.length-1)
-            io.sockets.emit("Success",players[socket.id])
+            io.sockets.emit("Success",players[socket.id].name)
             socket.emit('SendWord',  WordsToPlay[Word])
             socket.emit("ShowBtn")
             socket.broadcast.emit("DelBtn", "Del");
-            DrawName = players[socket.id]
+            DrawName = players[socket.id].name
             io.sockets.emit('TTT', DrawName)
         }
-        io.sockets.emit("NewUserMessage", {name: players[socket.id], sms:data});
+        io.sockets.emit("NewUserMessage", {ability: players[socket.id].ability,name: players[socket.id].name, sms:data})
     })
 
     if(AlreadyDraw == "true")
@@ -56,7 +79,9 @@ io.on('connection', function(socket) {
         socket.emit("DelBtn", "Del");
     }
     socket.on("ChoiseDraw", function(){
-        DrawName = players[socket.id] 
+        DrawName = players[socket.id].name
+        players[socket.id].ability = "true"
+        io.sockets.emit("UserNamesList", players)
         socket.emit('TTT', DrawName);
         AlreadyDraw = "true";
         DrawId = socket.id
@@ -66,32 +91,40 @@ io.on('connection', function(socket) {
     })
     
     socket.on("UserChangeColor", function(data){
-        socket.broadcast.emit("ChangeColor", data);
+        io.sockets.emit("ChangeColor", data);
     })
     socket.on("DrawMouseDown", function(data){
-        socket.broadcast.emit("DrawUserMouseDown", {x:data.X, y:data.Y});
+        io.sockets.emit("DrawUserMouseDown", {x:data.X, y:data.Y});
     })
     socket.on("DrawMouseMove", function(data){
-        socket.broadcast.emit("DrawUserMouseMove", {x:data.X, y:data.Y});
+        io.sockets.emit("DrawUserMouseMove", {x:data.X, y:data.Y});
     })
     socket.on("DrawMouseUp", function(data){
-        socket.broadcast.emit("DrawUserMouseUp", {x:data.X, y:data.Y});
+        io.sockets.emit("DrawUserMouseUp", {x:data.X, y:data.Y});
     })
     socket.on("Remove", function(){
         socket.broadcast.emit("UserRemove");
     })
     socket.on('disconnect', function() {
-        if(players[socket.id] === DrawName && players[socket.id] !== undefined){
-            var deletedName = players[socket.id] 
-            delete players[socket.id]
-            var NewDraw = Object.keys(players);
-            DrawName = players[NewDraw[0]]
-            //io.sockets.sockets[NewDraw[0]].emit('SendWord',  WordsToPlay[Word])
-            io.sockets.sockets[NewDraw[0]].emit("ShowBtn")
-            io.sockets.emit('TTT', DrawName)
-            io.sockets.emit('message', "У игрока "+ deletedName +" произошёл сбой, теперь рисующим стал "+players[NewDraw[0]]+"\n");
+        if(players[socket.id] !== undefined){
+            if(players[socket.id].name === DrawName && players[socket.id] !== undefined){
+                delete players[socket.id]
+                var NewDraw = Object.keys(players);
+                if(players[NewDraw[0]] === undefined){
+                    WaitNewUser = true
+                    console.log("Что-то пошло не так")
+                }else{
+                    players[NewDraw[0]].ability = "true"
+                    DrawName = players[NewDraw[0]].name
+                    io.sockets.sockets[NewDraw[0]].emit("ShowBtn")
+                    io.sockets.emit('TTT', DrawName)
+                    io.sockets.emit('message', "У рисующего игрока произошёл сбой, теперь рисующим стал "+players[NewDraw[0]].name+"\n");
+                    io.sockets.emit("UserNamesList", players)
+                }
+            }
+            else delete players[socket.id]
+            io.sockets.emit("UserNamesList", players)
         }
-        else delete players[socket.id]
     })
     
 });
