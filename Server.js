@@ -5,16 +5,14 @@ var socketIO = require('socket.io');
 var app = express();
 var server = http.Server(app);
 var io = socketIO(server);
-const port = process.env.PORT || 5000;
+const port = 5000;
 app.set('port', port);
 app.use('/static', express.static(__dirname + '/static'));
 
-// Маршруты
 app.get('/', function(request, response) {
     response.sendFile(path.join(__dirname+  "/static", 'index.html'));
 });
 
-// Запуск сервера
 server.listen(port, function() {
     console.log('Запускаю сервер на порте 5000');
 });
@@ -113,11 +111,11 @@ io.on('connection', function(socket) {
                 var NewDraw = Object.keys(players);
                 if(players[NewDraw[0]] === undefined){
                     WaitNewUser = true
-                    console.log("Что-то пошло не так")
                 }else{
                     players[NewDraw[0]].ability = "true"
                     DrawName = players[NewDraw[0]].name
                     io.sockets.sockets[NewDraw[0]].emit("ShowBtn")
+                    socket.emit('SendWord',  WordsToPlay[Word])
                     io.sockets.emit('TTT', DrawName)
                     io.sockets.emit('message', "У рисующего игрока произошёл сбой, теперь рисующим стал "+players[NewDraw[0]].name+"\n");
                     io.sockets.emit("UserNamesList", players)
