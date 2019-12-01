@@ -1,15 +1,25 @@
-var name;
+var name, UserList, UserNames;
 $(document).on("click", "#DelBtn", function(){
     if($('#GameName').val()==""){
         $('#GameName').focus();
         return false;
     }
+    var check
     name = $('#GameName').val();
-    socket.emit("NewUserName", $('#GameName').val())
-    $('#StartWindow').remove(); 
-    socket.on('message', function(data) {
-        $("#UsersAnswer").append(data)
-    });
+    for(key in UserList){
+        if(name == UserList[key].name){
+            alert("Введенное вами имя уже существует")
+            check = "false"
+            this.preventDefault()
+        }
+    }
+    if(check != "false"){
+        socket.emit("NewUserName", $('#GameName').val())
+        $('#StartWindow').remove(); 
+        socket.on('message', function(data) {
+            $("#UsersAnswer").append(data)
+        });
+    }
 })
 $('#UserMessage').keyup(function(event){
     if(event.keyCode == 13){
@@ -29,6 +39,19 @@ $(document).on("click", "#IDraw", function(){
     $("#IDraw").remove()
     socket.emit("ChoiseDraw", "text");
 });
+socket.on("UserNamesList",(data)=>{
+    $("#ListOfUsers").html("")
+    $("#ListOfUsers").append("Список игроков:"+"\n")
+    for(key in data){
+        if(data[key].ability == "true"){
+            $("#ListOfUsers").append("&#10017; " + data[key].name+"\n")
+        }
+        else $("#ListOfUsers").append(data[key].name+"\n")
+    }
+})
+socket.on("IsUser",(data)=>{
+    UserList = data
+})
 socket.on('Success', (data) =>{
     alert("Игрок '"+data+"' Угадал слово!")
 });
@@ -36,7 +59,10 @@ socket.on('SendWord', (data) =>{
     alert(data)
 });
 socket.on('NewUserMessage', (data) =>{
-    $("#UsersAnswer").append(data.name+":"+data.sms+"\n")
+    if(data.ability == "true"){
+        $("#UsersAnswer").append("&#10017; " + data.name+":"+data.sms+"\n")
+    }
+    else $("#UsersAnswer").append(data.name+":"+data.sms+"\n")
 });
 socket.on('ShowBtn', (data) =>{
     //$("#IDraw").show()
@@ -52,9 +78,8 @@ var DrawAbility = "false";
 var ColorChange;
 var testClick = 0; 
 socket.on('TTT', (data) =>{
-    $("#UserMessage").attr("disabled", true);
+    //$("#UserMessage").attr("disabled", true);
     if(name === data){
-            var socket = io();
             function test() {
                 document.getElementById("myCanvas").width = document.getElementById("myCanvas").width;
             }
@@ -69,37 +94,13 @@ socket.on('TTT', (data) =>{
             };
 
             var draw = false;
-            socket.on("ChangeColor", (data)=>{
-                context.strokeStyle = data
-                ColorChange = data
-            })          
-            socket.on("DrawUserMouseDown", (data)=>{
-                context.strokeStyle = ColorChange
-                mouse.x = data.x;
-                mouse.y = data.y;
-                context.beginPath();
-                context.moveTo(mouse.x, mouse.y);
-            })
-            socket.on("DrawUserMouseMove", (data)=>{
-                context.strokeStyle = ColorChange
-                mouse.x = data.x;
-                mouse.y = data.y;
-                context.lineTo(mouse.x, mouse.y);
-                context.stroke();
-            })
-            socket.on("DrawUserMouseUp", (data)=>{
-                context.strokeStyle = ColorChange
-                mouse.x = data.x;
-                mouse.y = data.y;
-                context.lineTo(mouse.x, mouse.y);
-                context.stroke();
-            })
+            
             $("#myCanvas").on("mousedown", function (e) {
                 mouse.x = e.pageX - this.offsetLeft;
                 mouse.y = e.pageY - this.offsetTop;
                 draw = true;
-                context.beginPath();
-                context.moveTo(mouse.x, mouse.y);
+                //context.beginPath();
+                //context.moveTo(mouse.x, mouse.y);
                 socket.emit("DrawMouseDown", {X:mouse.x,Y:mouse.y})
             });
             $("#myCanvas").on("mouseout", (e)=>{
@@ -113,16 +114,16 @@ socket.on('TTT', (data) =>{
                 if (draw == true) {
                     mouse.x = e.pageX - this.offsetLeft;
                     mouse.y = e.pageY - this.offsetTop;
-                    context.lineTo(mouse.x, mouse.y);
-                    context.stroke();
+                    //context.lineTo(mouse.x, mouse.y);
+                    //context.stroke();
                     socket.emit("DrawMouseMove", {X:mouse.x,Y:mouse.y})
                 }
             });
             $("#myCanvas").on("mouseup",function (e) {
-                mouse.x = e.pageX - this.offsetLeft;
-                mouse.y = e.pageY - this.offsetTop;
-                context.lineTo(mouse.x, mouse.y);
-                context.stroke();
+               mouse.x = e.pageX - this.offsetLeft;
+               mouse.y = e.pageY - this.offsetTop;
+               //context.lineTo(mouse.x, mouse.y);
+               //context.stroke();
                 socket.emit("DrawMouseUp", {X:mouse.x,Y:mouse.y})
                 draw = false;
             });

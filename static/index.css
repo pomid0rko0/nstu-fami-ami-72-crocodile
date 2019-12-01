@@ -18,6 +18,16 @@ html, body {
     margin: 100px 0 0 0;
     text-align: center;
 }
+main{
+    display: flex;
+    justify-content: space-between;
+}
+#ListOfUsers{
+    text-align: center;
+    margin-right: 5%;
+    width: 300px;
+    height: 400px;
+}
 #UsersAnswer
 {
     text-align: center;
@@ -29,7 +39,7 @@ html, body {
 }
 #CanvasDiv
 {
-    margin-left: 10%;
+    margin-left: 5%;
     float: left;
 }
 .Chat{
