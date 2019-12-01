@@ -25,7 +25,7 @@ var AlreadyDraw,
 DrawName,
 Word,
 WaitNewUser = false,
-UsersList = {};
+Coordinates = [];
 
 function randomInteger(min, max) {
     let rand = min + Math.random() * (max - min);
@@ -37,7 +37,7 @@ io.on('connection', function(socket) {
         players[socket.id] = {name:name, ability:"false"}
         io.sockets.emit("UserNamesList", players)
         io.sockets.emit('message', "В игру зашел новый игрок: "+name+"\n");
-
+        socket.emit("Draw", Coordinates)
 
         if(WaitNewUser === true){
             WaitNewUser = false
@@ -54,7 +54,7 @@ io.on('connection', function(socket) {
     })
     
     socket.on("NewMessage", function(data){
-        if(data == WordsToPlay[Word]){
+        if(data.toLowerCase() == WordsToPlay[Word].toLowerCase() && players[socket.id].name != DrawName){
             for (let key in players) {
                 if(players[key].name == DrawName){
                     players[key].ability = "false"
@@ -90,19 +90,20 @@ io.on('connection', function(socket) {
         socket.broadcast.emit("DelBtn", "Del");
     })
     
-    socket.on("UserChangeColor", function(data){
-        io.sockets.emit("ChangeColor", data);
-    })
     socket.on("DrawMouseDown", function(data){
-        io.sockets.emit("DrawUserMouseDown", {x:data.X, y:data.Y});
+        io.sockets.emit("DrawUserMouseDown", {x:data.X, y:data.Y,color:data.color});
+        Coordinates.push({x:data.X, y:data.Y, color:data.color})
     })
     socket.on("DrawMouseMove", function(data){
-        io.sockets.emit("DrawUserMouseMove", {x:data.X, y:data.Y});
+        io.sockets.emit("DrawUserMouseMove", {x:data.X, y:data.Y,color:data.color});
+        Coordinates.push({x:data.X, y:data.Y, color:data.color})
     })
     socket.on("DrawMouseUp", function(data){
-        io.sockets.emit("DrawUserMouseUp", {x:data.X, y:data.Y});
+        io.sockets.emit("DrawUserMouseUp", {x:data.X, y:data.Y,color:data.color});
+        Coordinates.push({x:data.X, y:data.Y, color:data.color, text:data.text})
     })
     socket.on("Remove", function(){
+        Coordinates = []
         socket.broadcast.emit("UserRemove");
     })
     socket.on('disconnect', function() {
