@@ -65,7 +65,6 @@ socket.on('NewUserMessage', (data) =>{
     else $("#UsersAnswer").append(data.name+":"+data.sms+"\n")
 });
 socket.on('ShowBtn', (data) =>{
-    //$("#IDraw").show()
     $("#ClearBtn").show()
     $(".ColorBtn").show()
 });
