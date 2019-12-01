@@ -78,7 +78,6 @@ var DrawAbility = "false";
 var ColorChange;
 var testClick = 0; 
 socket.on('TTT', (data) =>{
-    //$("#UserMessage").attr("disabled", true);
     if(name === data){
             function test() {
                 document.getElementById("myCanvas").width = document.getElementById("myCanvas").width;
@@ -93,38 +92,36 @@ socket.on('TTT', (data) =>{
                 y: 0
             };
 
-            var draw = false;
+            var draw = false, color;
+
+
+            $("#myCanvas").on("mouseout", (e)=>{
+                draw = false;
+            })
             
+            $(".ColorBtn").on("click",()=>{
+                context.strokeStyle = event.target.id
+                color = event.target.id
+            })
+
+
             $("#myCanvas").on("mousedown", function (e) {
                 mouse.x = e.pageX - this.offsetLeft;
                 mouse.y = e.pageY - this.offsetTop;
                 draw = true;
-                //context.beginPath();
-                //context.moveTo(mouse.x, mouse.y);
-                socket.emit("DrawMouseDown", {X:mouse.x,Y:mouse.y})
+                socket.emit("DrawMouseDown", {X:mouse.x,Y:mouse.y,color:color})
             });
-            $("#myCanvas").on("mouseout", (e)=>{
-                draw = false;
-            })
-            $(".ColorBtn").on("click",()=>{
-                context.strokeStyle = event.target.id
-                socket.emit("UserChangeColor", context.strokeStyle)
-            })
             $("#myCanvas").on("mousemove",function (e) {
                 if (draw == true) {
                     mouse.x = e.pageX - this.offsetLeft;
                     mouse.y = e.pageY - this.offsetTop;
-                    //context.lineTo(mouse.x, mouse.y);
-                    //context.stroke();
-                    socket.emit("DrawMouseMove", {X:mouse.x,Y:mouse.y})
+                    socket.emit("DrawMouseMove", {X:mouse.x,Y:mouse.y,color:color})
                 }
             });
             $("#myCanvas").on("mouseup",function (e) {
                mouse.x = e.pageX - this.offsetLeft;
                mouse.y = e.pageY - this.offsetTop;
-               //context.lineTo(mouse.x, mouse.y);
-               //context.stroke();
-                socket.emit("DrawMouseUp", {X:mouse.x,Y:mouse.y})
+                socket.emit("DrawMouseUp", {X:mouse.x,Y:mouse.y,color:color, text:"space"})
                 draw = false;
             });
         }

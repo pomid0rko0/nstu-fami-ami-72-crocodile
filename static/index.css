@@ -44,7 +44,6 @@ main{
 }
 .Chat{
     text-align: center;
-    float: right;
 }
 .ColorBtn
 {
@@ -58,3 +57,4 @@ main{
 #yellow{background: yellow;}
 #green{background: green;}
 #black{background: black;}
+#purple{background: purple;}

@@ -25,6 +25,7 @@
             <button class="ColorBtn" id="yellow"></button>
             <button class="ColorBtn" id="green"></button>
             <button class="ColorBtn" id="black"></button>
+            <button class="ColorBtn" id="purple"></button>
         </div>
     
         <div id="CanvasScript">
@@ -35,38 +36,48 @@
                     socket.emit("Remove");
                     document.getElementById("myCanvas").width = document.getElementById("myCanvas").width;
                 }
+
                 socket.on("UserRemove", ()=>{
                     document.getElementById("myCanvas").width = document.getElementById("myCanvas").width;
                 })
                 var canvas = document.getElementById("myCanvas"),
-                    context = canvas.getContext("2d"),
-                    w = canvas.width,
-                    h = canvas.height;
-            
+                context = canvas.getContext("2d"),
+                w = canvas.width,
+                h = canvas.height;
+                context.lineWidth="1";
+                
+                socket.on("Draw",(data)=>{
+                    for(let i = 0; i < data.length-1; i++){
+                        if(data[i].text == "space"){
+                            i++
+                            context.strokeStyle = data[i].color
+                        }
+                        context.beginPath();
+                        context.moveTo(data[i].x, data[i].y)
+                        context.lineTo(data[i + 1].x, data[i + 1].y);
+                        context.stroke();
+                    }
+                })
                 var mouse = {
                     x: 0,
                     y: 0
-                };  
-                socket.on("ChangeColor", (data)=>{
-                    context.strokeStyle = data
-                    ColorChange = data
-                })                      
+                };                 
                 socket.on("DrawUserMouseDown", (data)=>{
-                    context.strokeStyle = ColorChange
+                    context.strokeStyle = data.color
                     mouse.x = data.x;
                     mouse.y = data.y;
                     context.beginPath();
                     context.moveTo(mouse.x, mouse.y);
                 })
                 socket.on("DrawUserMouseMove", (data)=>{
-                    context.strokeStyle = ColorChange
+                    context.strokeStyle = data.color
                     mouse.x = data.x;
                     mouse.y = data.y;
                     context.lineTo(mouse.x, mouse.y);
                     context.stroke();
                 })
                 socket.on("DrawUserMouseUp", (data)=>{
-                    context.strokeStyle = ColorChange
+                    context.strokeStyle = data.color
                     mouse.x = data.x;
                     mouse.y = data.y;
                     context.lineTo(mouse.x, mouse.y);
